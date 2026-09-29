@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Image Gallery | Find Everyting</title>
+
+    <style>
+
+        /* =========================
+           RESET
+        ========================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+        /* =========================
+           BODY
+        ========================= */
+
+        body {
+            background: #0b0b10;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+        }
+
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        header {
+            text-align: center;
+            padding: 35px 15px;
+
+            background: #13131c;
+
+            border-bottom: 1px solid #252535;
+        }
+
+        header h1 {
+            font-size: clamp(26px, 5vw, 42px);
+
+            margin-bottom: 12px;
+
+            letter-spacing: 1px;
+        }
+
+        header p {
+            color: #a5a5b8;
+
+            font-size: 14px;
+        }
+
+
+        /* =========================
+           MAIN
+        ========================= */
+
+        main {
+            max-width: 1400px;
+
+            margin: auto;
+
+            padding: 25px;
+        }
+
+
+        /* =========================
+           TOOLBAR
+        ========================= */
+
+        .toolbar {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 15px;
+
+            margin-bottom: 25px;
+
+            flex-wrap: wrap;
+        }
+
+        .toolbar h2 {
+            font-size: 22px;
+        }
+
+
+        /* =========================
+           NORMAL BUTTON
+        ========================= */
+
+        button {
+            background: #8054ff;
+
+            color: white;
+
+            border: none;
+
+            padding: 12px 22px;
+
+            border-radius: 10px;
+
+            font-size: 15px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #6939f5;
+
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+
+            cursor: not-allowed;
+
+            transform: none;
+        }
+
+
+        /* =========================
+           CORNER REFRESH BUTTON
+        ========================= */
+
+        .refresh-corner {
+            position: fixed;
+
+            bottom: 20px;
+            right: 20px;
+
+            width: 52px;
+            height: 52px;
+
+            padding: 0;
+
+            border-radius: 50%;
+
+            background: #8054ff;
+
+            color: white;
+
+            font-size: 25px;
+
+            font-weight: normal;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 4px 15px rgba(0, 0, 0, 0.4);
+
+            z-index: 1000;
+
+            transition: 0.2s;
+        }
+
+        .refresh-corner:hover {
+            background: #6939f5;
+
+            transform:
+                scale(1.1)
+                rotate(20deg);
+        }
+
+        .refresh-corner:active {
+            transform: scale(0.95);
+        }
+
+
+        /* =========================
+           GALLERY
+        ========================= */
+
+        .gallery {
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    auto-fit,
+                    minmax(220px, 1fr)
+                );
+
+            gap: 22px;
+        }
+
+
+        /* =========================
+           IMAGE CARD
+        ========================= */
+
+        .image-card {
+            background: #171720;
+
+            border: 1px solid #292936;
+
+            border-radius: 14px;
+
+            overflow: hidden;
+
+            transition:
+                transform 0.2s,
+                border-color 0.2s;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+
+            border-color: #8054ff;
+        }
+
+
+        /* =========================
+           GALLERY IMAGE
+        ========================= */
+
+        .image-card img {
+            width: 100%;
+
+            aspect-ratio: 3 / 4;
+
+            object-fit: cover;
+
+            display: block;
+
+            background: #22222c;
+
+            cursor: zoom-in;
+
+            transition: opacity 0.2s;
+        }
+
+        .image-card img:hover {
+            opacity: 0.9;
+        }
+
+
+        /* =========================
+           IMAGE INFO
+        ========================= */
+
+        .image-info {
+            padding: 14px;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            gap: 10px;
+        }
+
+        .image-info span {
+            color: #b6b6c8;
+
+            font-size: 13px;
+        }
+
+        .image-info a {
+            color: #b49bff;
+
+            text-decoration: none;
+
+            font-size: 13px;
+        }
+
+        .image-info a:hover {
+            text-decoration: underline;
+        }
+
+
+        /* =========================
+           LOADING
+        ========================= */
+
+        .status {
+            text-align: center;
+
+            padding: 60px 15px;
+
+            color: #b6b6c8;
+
+            font-size: 16px;
+
+            grid-column: 1 / -1;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+
+            border: 4px solid #292936;
+
+            border-top: 4px solid #8054ff;
+
+            border-radius: 50%;
+
+            animation:
+                spin 0.8s linear infinite;
+
+            margin:
+                0 auto 20px;
+        }
+
+        @keyframes spin {
+
+            to {
+                transform: rotate(360deg);
+            }
+
+        }
+
+
+        /* =========================
+           LIGHTBOX
+        ========================= */
+
+        .lightbox {
+            display: none;
+
+            position: fixed;
+
+            inset: 0;
+
+            width: 100%;
+            height: 100%;
+
+            background:
+                rgba(0, 0, 0, 0.94);
+
+            z-index: 2000;
+
+            justify-content: center;
+
+            align-items: center;
+
+            padding: 30px;
+
+            cursor: zoom-out;
+        }
+
+
+        /* Lightbox visible */
+
+        .lightbox.active {
+            display: flex;
+        }
+
+
+        /* Full-size image */
+
+        .lightbox img {
+            max-width: 95vw;
+
+            max-height: 95vh;
+
+            width: auto;
+
+            height: auto;
+
+            object-fit: contain;
+
+            border-radius: 8px;
+
+            box-shadow:
+                0 10px 40px
+                rgba(0, 0, 0, 0.6);
+
+            cursor: default;
+
+            animation:
+                lightboxOpen 0.2s ease;
+        }
+
+
+        @keyframes lightboxOpen {
+
+            from {
+                opacity: 0;
+
+                transform:
+                    scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+
+                transform:
+                    scale(1);
+            }
+
+        }
+
+
+        /* =========================
+           LIGHTBOX CLOSE BUTTON
+        ========================= */
+
+        .lightbox-close {
+            position: absolute;
+
+            top: 20px;
+            right: 25px;
+
+            width: 48px;
+            height: 48px;
+
+            padding: 0;
+
+            border-radius: 50%;
+
+            background:
+                rgba(255, 255, 255, 0.15);
+
+            color: white;
+
+            font-size: 30px;
+
+            font-weight: normal;
+
+            cursor: pointer;
+
+            z-index: 2001;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+        }
+
+        .lightbox-close:hover {
+            background:
+                rgba(255, 255, 255, 0.25);
+
+            transform: none;
+        }
+
+
+        /* =========================
+           FOOTER
+        ========================= */
+
+        footer {
+            text-align: center;
+
+            padding: 30px 15px;
+
+            color: #77778b;
+
+            font-size: 13px;
+
+            margin-top: 30px;
+        }
+
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 600px) {
+
+            main {
+                padding: 15px;
+            }
+
+            .gallery {
+                grid-template-columns:
+                    repeat(
+                        2,
+                        minmax(0, 1fr)
+                    );
+
+                gap: 12px;
+            }
+
+            .image-card img {
+                aspect-ratio: 3 / 4;
+            }
+
+            .image-info {
+                padding: 10px;
+            }
+
+            .toolbar h2 {
+                font-size: 18px;
+            }
+
+            .toolbar button {
+                padding: 10px 15px;
+
+                font-size: 13px;
+            }
+
+            .refresh-corner {
+                width: 46px;
+                height: 46px;
+
+                bottom: 15px;
+                right: 15px;
+
+                font-size: 22px;
+            }
+
+            .lightbox {
+                padding: 15px;
+            }
+
+            .lightbox img {
+                max-width: 100vw;
+
+                max-height: 90vh;
+            }
+
+            .lightbox-close {
+                top: 12px;
+
+                right: 12px;
+
+                width: 42px;
+                height: 42px;
+
+                font-size: 26px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================
+         HEADER
+    ========================= -->
+
+    <header>
+
+        <h1>Image Gallery</h1>
+
+        <p>
+            Discover a new collection
+        </p>
+
+    </header>
+
+
+    <!-- =========================
+         MAIN
+    ========================= -->
+
+    <main>
+
+        <div class="toolbar">
+
+            <h2>
+                Latest Images
+            </h2>
+
+            <button
+                id="refreshBtn"
+                onclick="loadImages()">
+
+                ↻ Generate New Images
+
+            </button>
+
+        </div>
+
+
+        <!-- =========================
+             GALLERY
+        ========================= -->
+
+        <div
+            class="gallery"
+            id="gallery">
+
+            <div class="status">
+
+                <div class="spinner"></div>
+
+                Loading your images...
+
+            </div>
+
+        </div>
+
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+    ========================= -->
+
+    <footer>
+
+        Powered by Python & Flask
+
+    </footer>
+
+
+    <!-- =========================
+         CORNER REFRESH
+    ========================= -->
+
+    <button
+        class="refresh-corner"
+        onclick="location.reload()"
+        title="Refresh page"
+        aria-label="Refresh page">
+
+        ↻
+
+    </button>
+
+
+    <!-- =========================
+         LIGHTBOX
+    ========================= -->
+
+    <div
+        class="lightbox"
+        id="lightbox">
+
+
+        <!-- Close button -->
+
+        <button
+            class="lightbox-close"
+            id="lightboxClose"
+            aria-label="Close image">
+
+            ×
+
+        </button>
+
+
+        <!-- Full-size image -->
+
+        <img
+            id="lightboxImage"
+            src=""
+            alt="Full size image">
+
+    </div>
+
+
+    <!-- =========================
+         JAVASCRIPT
+    ========================= -->
+
+    <script>
+
+
+        /* =========================
+           ELEMENTS
+        ========================= */
+
+        const gallery =
+            document.getElementById(
+                "gallery"
+            );
+
+        const refreshBtn =
+            document.getElementById(
+                "refreshBtn"
+            );
+
+
+        const lightbox =
+            document.getElementById(
+                "lightbox"
+            );
+
+        const lightboxImage =
+            document.getElementById(
+                "lightboxImage"
+            );
+
+        const lightboxClose =
+            document.getElementById(
+                "lightboxClose"
+            );
+
+
+        /* =========================
+           LOADING SCREEN
+        ========================= */
+
+        function showLoading() {
+
+            gallery.innerHTML = `
+
+                <div class="status">
+
+                    <div class="spinner"></div>
+
+                    Generating your images...
+
+                </div>
+
+            `;
+        }
+
+
+        /* =========================
+           LOAD IMAGES
+        ========================= */
+
+        async function loadImages() {
+
+            refreshBtn.disabled = true;
+
+            refreshBtn.textContent =
+                "Loading...";
+
+            showLoading();
+
+
+            try {
+
+                /*
+                    Request images
+                    from Flask.
+                */
+
+                const response =
+                    await fetch(
+                        "/api/images",
+                        {
+                            cache: "no-store"
+                        }
+                    );
+
+
+                /* Check response */
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "Python API request failed"
+                    );
+
+                }
+
+
+                /* Convert to JSON */
+
+                const data =
+                    await response.json();
+
+
+                /* Clear gallery */
+
+                gallery.innerHTML = "";
+
+
+                /* Check images */
+
+                if (
+                    !data.images ||
+                    data.images.length === 0
+                ) {
+
+                    gallery.innerHTML = `
+
+                        <div class="status">
+
+                            No images found.
+
+                        </div>
+
+                    `;
+
+                    return;
+                }
+
+
+                /* =========================
+                   CREATE IMAGE CARDS
+                ========================= */
+
+                data.images.forEach(
+                    (url, index) => {
+
+
+                        /* Card */
+
+                        const card =
+                            document.createElement(
+                                "div"
+                            );
+
+                        card.className =
+                            "image-card";
+
+
+                        /* Image */
+
+                        const img =
+                            document.createElement(
+                                "img"
+                            );
+
+
+                        img.src = url;
+
+
+                        img.alt =
+                            `Generated image ${
+                                index + 1
+                            }`;
+
+
+                        img.loading =
+                            "lazy";
+
+
+                        /*
+                            Clicking the image
+                            opens the lightbox.
+                        */
+
+                        img.addEventListener(
+                            "click",
+                            function () {
+
+                                openLightbox(url);
+
+                            }
+                        );
+
+
+                        /*
+                            Image loading error.
+                        */
+
+                        img.onerror =
+                            function () {
+
+                                this.alt =
+                                    "Image could not be loaded";
+
+                                this.style.opacity =
+                                    "0.4";
+
+                            };
+
+
+                        /* =========================
+                           IMAGE INFORMATION
+                        ========================= */
+
+                        const info =
+                            document.createElement(
+                                "div"
+                            );
+
+                        info.className =
+                            "image-info";
+
+
+                        /* Label */
+
+                        const label =
+                            document.createElement(
+                                "span"
+                            );
+
+                        label.textContent =
+                            `Image ${
+                                index + 1
+                            }`;
+
+
+                        /* Open link */
+
+                        const link =
+                            document.createElement(
+                                "a"
+                            );
+
+                        link.href = url;
+
+                        link.target =
+                            "_blank";
+
+                        link.rel =
+                            "noopener noreferrer";
+
+                        link.textContent =
+                            "Open ↗";
+
+
+                        /* Add elements */
+
+                        info.appendChild(
+                            label
+                        );
+
+                        info.appendChild(
+                            link
+                        );
+
+
+                        card.appendChild(
+                            img
+                        );
+
+                        card.appendChild(
+                            info
+                        );
+
+
+                        gallery.appendChild(
+                            card
+                        );
+
+                    }
+                );
+
+
+            }
+
+
+            catch (error) {
+
+                console.error(error);
+
+
+                gallery.innerHTML = `
+
+                    <div class="status">
+
+                        <h3>
+                            Unable to load images
+                        </h3>
+
+                        <p>
+                            Make sure your Python
+                            Flask server is running
+                            and try again.
+                        </p>
+
+                    </div>
+
+                `;
+
+            }
+
+
+            finally {
+
+                refreshBtn.disabled =
+                    false;
+
+                refreshBtn.textContent =
+                    "↻ Generate New Images";
+
+            }
+
+        }
+
+
+        /* =========================
+           OPEN LIGHTBOX
+        ========================= */
+
+        function openLightbox(url) {
+
+            lightboxImage.src = url;
+
+            lightbox.classList.add(
+                "active"
+            );
+
+
+            /*
+                Prevent the background
+                page from scrolling.
+            */
+
+            document.body.style.overflow =
+                "hidden";
+
+        }
+
+
+        /* =========================
+           CLOSE LIGHTBOX
+        ========================= */
+
+        function closeLightbox() {
+
+            lightbox.classList.remove(
+                "active"
+            );
+
+
+            lightboxImage.src = "";
+
+
+            /*
+                Restore page scrolling.
+            */
+
+            document.body.style.overflow =
+                "";
+
+        }
+
+
+        /* =========================
+           CLOSE BUTTON
+        ========================= */
+
+        lightboxClose.addEventListener(
+            "click",
+            closeLightbox
+        );
+
+
+        /* =========================
+           CLICK OUTSIDE IMAGE
+        ========================= */
+
+        lightbox.addEventListener(
+            "click",
+            function (event) {
+
+                /*
+                    Only close when the
+                    dark background itself
+                    is clicked.
+                */
+
+                if (
+                    event.target === lightbox
+                ) {
+
+                    closeLightbox();
+
+                }
+
+            }
+        );
+
+
+        /* =========================
+           ESC KEY
+        ========================= */
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key === "Escape"
+                ) {
+
+                    closeLightbox();
+
+                }
+
+            }
+        );
+
+
+        /* =========================
+           LOAD ON PAGE OPEN
+        ========================= */
+
+        window.addEventListener(
+            "DOMContentLoaded",
+            loadImages
+        );
+
+    </script>
+
+</body>
+
+</html>
